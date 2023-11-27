@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 def plot_progress(i: int, loss_history: List[float], w_module_history: List[float], x: np.ndarray, y: np.ndarray, w: np.ndarray):
     # clear current axes
     plt.clf()
-    
+
     # draw loss history
     plt.subplot(1, 3, 1)
     plt.plot(loss_history, label='Loss')
@@ -33,7 +33,7 @@ def plot_progress(i: int, loss_history: List[float], w_module_history: List[floa
         xlim = ax.get_xlim()
         ylim = ax.get_ylim()
 
-        
+
         # create grid to evaluate model
         xx = np.linspace(xlim[0], xlim[1], 50)
         yy = np.linspace(ylim[0], ylim[1], 50)
@@ -42,30 +42,30 @@ def plot_progress(i: int, loss_history: List[float], w_module_history: List[floa
         Z = np.dot(np.c_[xy, np.ones(xy.shape[0])], w)
         Z = Z.reshape(XX.shape)
 
-        
+
         # draw decision boundary and margins
         ax.contour(XX, YY, Z, colors='k', levels=[0], alpha=0.5, linestyles=['-'])
         plt.title('Decision Boundary')
-    
+
 
     plt.tight_layout()
     plt.pause(0.01)  # pause a bit so that plots are updated
-    
+
 
 def sigmoid(x):
-    ''' 
+    '''
     Sigmoid function.
     '''
     return 1 / (1 + np.exp(-x))
 
 class LogisticRegression():
-    ''' 
+    '''
     Logistic Regression
     '''
     def __init__(
         self,
     ) -> None:
-        
+
         self.w = None # random intialize w
         self.lr = None # learning rate
         self.reg = None # regularization parameter
@@ -74,10 +74,10 @@ class LogisticRegression():
         self,
         x: np.array
     ) -> Tuple[np.ndarray, np.ndarray]:
-        
-        ''' 
+
+        '''
         Logistic Regression (LR) prediction.
-        
+
         Arguments:
             x : (n, d + 1), where n represents the number of samples, d the number of features
 
@@ -90,19 +90,26 @@ class LogisticRegression():
         # !! Asumme that : self.w is already given.
 
         # TODO: first, you should add bias term to x
-        
+
+        all_1 = np.array([np.ones(len(x))])
+        x_hat = np.concatenate((x,all_1.T),axis=1)
+        # x_hat: n * d+1
+
         # TODO: second, you should compute the probability by invoking sigmoid function
-        
+        wtx = self.w @ x_hat.T
+        prob = sigmoid(wtx)
 
         # TODO: third, you should compute the prediction (W^T * x >= 0 --> y = 1, else y = -1)
-        
+        pred = np.where(wtx >= 0, 1, -1)
+
+        return [prob,pred]
         pass
-        
 
 
-        
-    
-    
+
+
+
+
 
     def fit(
         self,
@@ -112,7 +119,7 @@ class LogisticRegression():
         lr: float,
         reg: float,
     ) -> None:
-        ''' 
+        '''
         Logistic Regression (LR) training.
 
         Arguments:
@@ -121,45 +128,45 @@ class LogisticRegression():
             n_iter : number of iteration
             lr : learning rate
             reg : regularization parameter
-            
+
         Return:
             None
         '''
         self.lr = lr
         self.reg = reg
-        
+
         x = np.concatenate((x, np.ones((x.shape[0], 1))), axis=1) # add bias term
         self.w = np.random.normal(0, 1, x.shape[1]) # random intialize w
         loss_history = []
         w_module_history = []
 
-        
-        for i in range(n_iter):
-            
-            
-            # TODO: firstly, compute the loss with regularization term
-            
 
-            # TODO: secondly, update the weight 
-            
+        for i in range(n_iter):
+
+
+            # TODO: firstly, compute the loss with regularization term
+
+
+            # TODO: secondly, update the weight
+
 
             # plot loss and w module every 10 iterations
             if i % 10 == 0:
-                
+
                 loss_history.append(loss)
 
                 w_module_history.append(np.linalg.norm(self.w))
                 print("iter: {}, loss: {}, w_module: {}".format(i, loss, w_module_history[-1]))
                 plot_progress(i, loss_history,w_module_history, x, y, self.w)
-    
-        
+
+
 
     def update(
         self,
         x: np.array,
         y: np.array,
     ) -> None:
-        
+
         '''
         Update the parameters--weight w
         Arguments:
@@ -172,10 +179,10 @@ class LogisticRegression():
 
         # implement gradient descent algorithm
 
-    
+
         # TODO: 1. compute the gradient
-        
-        # TODO: 2. update the weight 
+
+        # TODO: 2. update the weight
         pass
 
 
@@ -184,7 +191,7 @@ class LogisticRegression():
         x: np.array,
         y: np.array,
     ):
-        ''' 
+        '''
         Compute the loss
 
         Arguments:
@@ -205,7 +212,7 @@ class LogisticRegression():
         x: np.array,
         y: np.array,
     ):
-        ''' 
+        '''
         Compute the loss
 
         Arguments:
@@ -215,7 +222,7 @@ class LogisticRegression():
         Return:
             loss: float, the loss value
         '''
-        # TODO: compute the Logistic Regression loss, including regularization term
+        # TODO: compute the Logistic Regression loss, not including regularization term
         # !! Note that the label y is from {-1, 1}
 
         pass
@@ -224,7 +231,7 @@ class LogisticRegression():
 # from data_generator import gen_2D_dataset
 
 # x_train, y_train = gen_2D_dataset(100,100,10)
-# x_test, y_test = gen_2D_dataset(10,10,10) 
+# x_test, y_test = gen_2D_dataset(10,10,10)
 
 
 # LR = LogisticRegression()
