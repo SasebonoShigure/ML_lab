@@ -146,10 +146,9 @@ class LogisticRegression():
 
 
             # TODO: firstly, compute the loss with regularization term
-            # loss = - (y @ (self.w @ x.T).T - np.sum(np.log(1 + np.exp(self.w @ x.T)))) + reg * np.sum(self.w ** 2)
-
+            loss = self.calLossReg(x, y)
             # TODO: secondly, update the weight
-
+            self.update(x, y)
 
             # plot loss and w module every 10 iterations
             if i % 10 == 0:
@@ -171,7 +170,7 @@ class LogisticRegression():
         '''
         Update the parameters--weight w
         Arguments:
-            x: (n, d+1), training samples, where n represents the number of training samples, d the number of features # x实际上是(n, d)
+            x: (n, d+1), training samples, where n represents the number of training samples, d the number of features
             y: (n,), training labels, where n represents the number of training samples
 
         Return:
@@ -182,8 +181,9 @@ class LogisticRegression():
 
 
         # TODO: 1. compute the gradient
-
+        gradient = (np.sum(np.array([sigmoid(-np.multiply(y, self.w @ x.T))]).T *( -x * y[:,np.newaxis]), axis = 0)+2 * self.reg * self.w) / x.shape[0]
         # TODO: 2. update the weight
+        self.w = self.w - self.lr * gradient
         pass
 
 
@@ -204,7 +204,8 @@ class LogisticRegression():
         '''
         # TODO: compute the Logistic Regression loss, including regularization term
         # !! Note that the label y is from {-1, 1}
-
+        loss = (np.sum(np.log(1 + np.exp(-np.multiply(y, (self.w @ x.T)))))+ self.reg * np.sum(self.w ** 2)) / x.shape[0]
+        return loss
         pass
 
 
@@ -225,7 +226,8 @@ class LogisticRegression():
         '''
         # TODO: compute the Logistic Regression loss, excluding regularization term
         # !! Note that the label y is from {-1, 1}
-
+        loss = np.sum(np.log(1 + np.exp(-np.multiply(y, (self.w @ x.T))))) / x.shape[0]
+        return loss
         pass
 
 
