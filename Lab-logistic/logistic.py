@@ -123,7 +123,7 @@ class LogisticRegression():
         Logistic Regression (LR) training.
 
         Arguments:
-            x : (n, d + 1), where n represents the number of training samples, d the number of features
+            x : (n, d + 1), where n represents the number of training samples, d the number of features # x实际上是(n, d)
             y : (n,), where n represents the number of samples
             n_iter : number of iteration
             lr : learning rate
@@ -132,6 +132,7 @@ class LogisticRegression():
         Return:
             None
         '''
+
         self.lr = lr
         self.reg = reg
 
@@ -145,7 +146,7 @@ class LogisticRegression():
 
 
             # TODO: firstly, compute the loss with regularization term
-
+            # loss = - (y @ (self.w @ x.T).T - np.sum(np.log(1 + np.exp(self.w @ x.T)))) + reg * np.sum(self.w ** 2)
 
             # TODO: secondly, update the weight
 
@@ -170,7 +171,7 @@ class LogisticRegression():
         '''
         Update the parameters--weight w
         Arguments:
-            x: (n, d+1), training samples, where n represents the number of training samples, d the number of features
+            x: (n, d+1), training samples, where n represents the number of training samples, d the number of features # x实际上是(n, d)
             y: (n,), training labels, where n represents the number of training samples
 
         Return:
@@ -190,7 +191,7 @@ class LogisticRegression():
         self,
         x: np.array,
         y: np.array,
-    ):
+    ) -> float:
         '''
         Compute the loss
 
@@ -211,7 +212,7 @@ class LogisticRegression():
         self,
         x: np.array,
         y: np.array,
-    ):
+    ) -> float:
         '''
         Compute the loss
 
@@ -222,7 +223,7 @@ class LogisticRegression():
         Return:
             loss: float, the loss value
         '''
-        # TODO: compute the Logistic Regression loss, not including regularization term
+        # TODO: compute the Logistic Regression loss, excluding regularization term
         # !! Note that the label y is from {-1, 1}
 
         pass
