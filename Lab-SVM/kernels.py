@@ -53,13 +53,18 @@ class RBF_kernel(Base_kernel):
 
     def __call__(self, x1, x2):
         # TODO: Implement the RBF kernel function
+        if x1.ndim < 2:
+            x1 = np.array([x1])
+        if x2.ndim < 2:
+            x2 = np.array([x2])
         diff = x1[:, np.newaxis, :] - x2[np.newaxis, :, :]
-        distances = np.sum(diff ** 2, axis = 2)
-        y = np.exp(- distances / (2 * self.sigma ** 2))
+        norm = np.sum(diff ** 2, axis = 2)
+        y = np.exp(- norm / (2 * self.sigma ** 2))
         return y
 
 # tests
 # x1 = np.array([[1,2],[3,4],[5,6]])
-# x2 = np.array([[5,6],[3,4]])
-# kernel = Polynomial_kernel(2,1)
+# x2 = np.array([3,4])
+# kernel = RBF_kernel(2)
 # print(kernel(x1,x2))
+

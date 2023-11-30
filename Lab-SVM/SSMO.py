@@ -1,5 +1,6 @@
 import numpy as np
 from tqdm import tqdm
+import random
 
 class SSMO_optimizer():
 
@@ -80,6 +81,27 @@ class SSMO_optimizer():
                 # Note: 1. Remember to call self.update_SVM() after updating self.b, self.alpha (self.support_vectors and self.support_labels).
                 #       2. If eta is 0., we just skip this pair of alpha variables.
 
+                # b也要更新？
+                if self.judge_violate_KKT(x_train[i], y_train[i], self.alpha[i]):
+                    j = random.randint(0, x_train.shape[0] - 1)
+                    while j == i:
+                        j = random.randint(0, x_train.shape[0] - 1)
+                    is_yi_equals_yj = (y_train[i] == y_train[j])
+                    L, H = self.compute_L_H(is_yi_equals_yj, i, j)
+                    eta = self.compute_eta(x_train[i], x_train[j])
+                    aj_new = self.compute_new_aj(x_train, y_train, i, j, eta, L, H)
+                    ai_new = self.compute_new_ai(y_train, i, j, aj_new)
+                    b_new = self.compute_new_b(x_train, y_train, i, j, ai_new, aj_new)
+                    self.alpha[i] = ai_new
+                    self.alpha[j] = aj_new
+                    self.b = b_new
+                    self.update_SVM()
+                    num_changed_alphas += 1
+                else:
+                    continue
+
+
+
 
 
                 pass
@@ -88,6 +110,7 @@ class SSMO_optimizer():
                 bar.set_description(f"loss: {loss:.4f}")
 
             if num_changed_alphas == 0:
+                # print("no alpha changed")
                 break
             else:
                 passes += 1
@@ -101,7 +124,7 @@ class SSMO_optimizer():
         print("Training finished")
         return
 
-    def judge_violoate_KKT(
+    def judge_violate_KKT(
         self,
         xi,
         yi,
@@ -124,11 +147,11 @@ class SSMO_optimizer():
         """
 
         if alpha_i == 0:
-            return yi * self.predict_score(xi) < 1 - self.kkt_thr
+            return yi * self.predict_score(xi) < 1 - self.kkt_thr # 在margin内部却没有对超平面做贡献(alpha=0)
         elif alpha_i == self.C:
-            return yi * self.predict_score(xi) > 1 + self.kkt_thr
+            return yi * self.predict_score(xi) > 1 + self.kkt_thr # ξi>0，却在margin超平面以外
         else:
-            return abs(yi * self.predict_score(xi) - 1) > self.kkt_thr
+            return abs(yi * self.predict_score(xi) - 1) > self.kkt_thr # 是s.v.且ξi=0，却不在margin超平面上
 
 
     def compute_E(
@@ -146,7 +169,7 @@ class SSMO_optimizer():
         Return:
             The error of the prediction of the i-th sample.
         """
-        return self.predict_score(xi) - yi
+        return self.predict_score(xi) - yi # ?
 
 
     def compute_L_H(
@@ -168,7 +191,12 @@ class SSMO_optimizer():
             H : The right boundary of **alpha[j]**.
         """
         # TODO: implement compute_L_H. You can only use self.C and self.alpha additionally in this function.
-
+        if is_yi_equals_yj:
+            H = min(self.C, self.alpha[i] + self.alpha[j])
+            L = max(0, self.alpha[i] + self.alpha[j] - self.C)
+        else:
+            H = min(self.C, self.C + self.alpha[j] - self.alpha[i])
+            L = max(0, self.alpha[j] - self.alpha[i])
         return L, H
 
     def compute_eta(self, xi, xj):
@@ -217,8 +245,14 @@ class SSMO_optimizer():
             # TODO: implement compute_new_aj when eta > 0.
             # Hint: By letting the first derivative of the objective function of dual form of SVM equal to 0,
             #       one can finally derive that the non-bounded optimal solution of alpha_j_opt is alpha_j_opt = alpha_j_old + y_j * (E_i - E_j) / eta.
-
-
+            Ei = self.compute_E(x_train[i], y_train[i])
+            Ej = self.compute_E(x_train[j], y_train[j])
+            step = y_train[j] * (Ei - Ej) / eta
+            aj_new = self.alpha[j] + step
+            if aj_new > H:
+                aj_new = H
+            elif aj_new < L:
+                aj_new = L
 
             return aj_new
         else:
@@ -266,7 +300,8 @@ class SSMO_optimizer():
 
 
         # TODO: implement compute_new_ai. You may only use self.alpha additionally in this function.
-
+        step = y_train[i] * y_train[j] * (self.alpha[j] - aj_new)
+        ai_new = self.alpha[i] + step
         return ai_new
 
     def compute_new_b(self, x_train, y_train, i, j, ai_new, aj_new):
@@ -316,3 +351,7 @@ class SSMO_optimizer():
         loss = (0.5 * kernel_M * alpha_M * y_train_M).sum() - self.alpha.sum()
 
         return loss
+
+# test
+# x1 = np.array([[1,2],[3,4],[5,6]])
+# print(x1.shape[0])
