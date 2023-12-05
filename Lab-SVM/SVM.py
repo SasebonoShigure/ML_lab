@@ -3,7 +3,7 @@ import numpy as np
 from typing import Tuple
 
 class SVM():
-    
+
     """
     Support Vector Machine model.
     """
@@ -26,7 +26,7 @@ class SVM():
 
     def predict(
         self,
-        x: np.ndarray 
+        x: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray]:
 
         """
@@ -39,10 +39,25 @@ class SVM():
             scores : (n,), SVM scores, where scores[i] is the score for x[i]
             pred : (n,), SVM predictions, where pred[i] is the prediction for x[i], in {-1, 1}
         """
-        
-        # TODO: implement predict method, 
-        # Asumme that: self.b, self.alpha, self.support_labels, self.support_vectors and self.kernel_fn are already given (They will be overwritten by SSMO optimization, which will be implemented in the next part)
-        
 
+        # TODO: implement predict method,
+        # Asumme that: self.b, self.alpha, self.support_labels, self.support_vectors and self.kernel_fn are already given (They will be overwritten by SSMO optimization, which will be implemented in the next part)
+        scores = self.support_labels * self.alpha @ self.kernel_fn(self.support_vectors, x) + self.b
+        pred = np.where(scores >= 0, 1, -1)
         return scores, pred
-    
+
+# tests
+# from kernels import *
+# x = np.array([[1,0],[0,1],[0,0]])
+# alpha = np.array([0.5,0.5,1])
+# y = np.array([1,1,-1])
+# x_test = np.array([[1,1],[-1,-1]])
+# print(y*alpha)
+# kernel = RBF_kernel(1)
+# svm = SVM(kernel)
+# K = kernel(x,x_test)
+# print(K)
+# scores = y*alpha@K
+# print(scores)
+# predict = np.where(scores >= 0, 1, -1)
+# print(predict)
