@@ -27,6 +27,13 @@ training_dataloader, validation_dataloader = create_flower_dataloaders(batch_siz
 
 model = Graph([
     # TODO: Please implement the MLP autoencoder model here (Both encoder and decoder).
+    Linear(3 * IMG_WIDTH * IMG_HEIGHT, 256), relu(),
+    Linear(256, 128), relu(),
+    Linear(128, 64),#relu(),
+
+    Linear(64, 128), relu(),
+    Linear(128, 256), relu(),
+    Linear(256, 3 * IMG_WIDTH * IMG_HEIGHT), sigmoid()
 ]
 )
 
@@ -39,42 +46,64 @@ avg_train_loss = 10000.
 avg_valid_loss = 10000.
 
 for epoch in range(num_epochs):
-    
+
     train_losses = []
-    
+
     # Adjust the learning rate
     lr = scheduler(epoch)
     step_num = len(training_dataloader)
-    
+
     # Training all batches
     for images, _ in training_dataloader:
+        # print('a batch starts')
         images = images.detach().numpy() # (Batch_size, 3, IMG_WIDTH, IMG_HEIGHT)
         model.flush()
         loss_fn_node.flush()
         # TODO: Please implement the training loop for a MLP autoencoder, which can perform forward, backward and update the parameters.
-        
-        
-        
+        images = images.reshape(images.shape[0], -1)
+        outputs = model.forward(images)
+        # print('images shape', images.shape)
+        # print('outputs shape', outputs.shape)
+        loss = loss_fn_node.forward(outputs, images)
+        model.backward(loss_fn_node.backward())
+        model.optimstep(lr)
+
+
         train_losses.append(loss.item())
     avg_train_loss = sum(train_losses) / len(train_losses)
-    
+
     # Validation every 3 epochs
     if epoch % 3 == 0:
+        # print("validation")
         valid_losses = []
         for images, _ in validation_dataloader:
             images = images.detach().numpy() # (Batch_size, 3, IMG_WIDTH, IMG_HEIGHT)
             # TODO: Please implement code which calculates the validation loss.
-            
-            
-            
+            images = images.reshape(images.shape[0], -1)
+            val_outputs = model.forward(images)
+            val_loss = loss_fn_node.forward(val_outputs, images)
+
+
             valid_losses.append(val_loss.item())
         avg_valid_loss = sum(valid_losses) / len(valid_losses)
 
         # TODO: Save model if better validation loss is achieved. Save the model by calling pickle.dump(model, open(model_save_path, 'wb')).
-        
-        
+
+        if avg_valid_loss < min_valid_loss:
+            min_valid_loss = avg_valid_loss
+            model.flush()
+            pickle.dump(model, open(model_save_path, 'wb'))
+
         # TODO: Early stopping if validation loss does not decrease for <early_stopping_patience> validation checks.
-        
-        
+        no_improvement_count = 0
+        if avg_valid_loss >= min_valid_loss:
+            no_improvement_count += 1
+        else:
+            no_improvement_count = 0
+
+        if no_improvement_count >= early_stopping_patience:
+            print("Early Stop")
+            break
+
     print(f"Epoch: {epoch}, Train Loss: {avg_train_loss}, Valid Loss: {avg_valid_loss}")
 

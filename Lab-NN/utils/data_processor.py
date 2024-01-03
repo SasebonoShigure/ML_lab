@@ -41,6 +41,8 @@ def show_recover_results(images, recover_images, save_path):
     num_images = images.shape[0]
     
     # show on two rows, first row is the original images, second row is the recovered images
+    images = torch.tensor(images)
+    recover_images = torch.tensor(recover_images)
     img_grid = make_grid(torch.cat([images, recover_images]), nrow=num_images).permute(1, 2, 0)
     plt.figure(figsize=(20, 20))
     

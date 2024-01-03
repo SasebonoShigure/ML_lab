@@ -26,8 +26,8 @@ if args.model == "MLPAE":
     model = pickle.load(open("./model/Best_MLPAE.pkl", "rb"))
 
     # visualize the results
-    train_images_sampled = next(iter(training_dataloader))[0]
-    valid_images_sampled = next(iter(validation_dataloader))[0]
+    train_images_sampled = next(iter(training_dataloader))[0].detach().numpy() 
+    valid_images_sampled = next(iter(validation_dataloader))[0].detach().numpy() 
 
     train_outputs = model.forward(train_images_sampled.reshape(-1, 24 * 24 * 3)).reshape(-1, 3, 24, 24)
     valid_outputs = model.forward(valid_images_sampled.reshape(-1, 24 * 24 * 3)).reshape(-1, 3, 24, 24)

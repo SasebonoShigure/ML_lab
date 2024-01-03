@@ -9,7 +9,7 @@ class Graph(object):
         super().__init__()
         self.nodes = nodes
 
-    def flush(self):        
+    def flush(self):
         for node in self.nodes:
             node.flush()
 
@@ -31,18 +31,21 @@ class Graph(object):
         """
         # TODO: Please implement the backward function for the computational graph, which can back propagate the gradients
         # from the loss node to the head node.
+        for node in self.nodes[::-1]:
+            grad = node.backward(grad)
 
+        # raise NotImplementedError
 
-        raise NotImplementedError
-    
     def optimstep(self, lr):
         """
         利用计算好的梯度对参数进行更新
         @param lr: 超参数，学习率
         @return: 无返回值
-        """  
-        # TODO: Please implement the optimstep function for a computational graph, 
+        """
+        # TODO: Please implement the optimstep function for a computational graph,
         # which can update the parameters of each node based on their gradients.
-        
-        
-        raise NotImplementedError
+        for node in self.nodes:
+            for i, _ in enumerate(node.params):
+                node.params[i] -= node.grad[i] * lr
+
+        # raise NotImplementedError

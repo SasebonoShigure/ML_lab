@@ -1,8 +1,8 @@
-from .Init import * 
+from .Init import *
 
 class Node(object):
     def __init__(self, name, *params):
-        # 节点可学习参数的梯度，self.grad[i]为self.params[i]的梯度  
+        # 节点可学习参数的梯度，self.grad[i]为self.params[i]的梯度
         self.grad = []
         # 节点保存的临时数据，如输入数据、中间结果、输出数据等
         self.cache = []

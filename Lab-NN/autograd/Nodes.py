@@ -11,7 +11,8 @@ class relu(Node):
         return np.clip(x, 0, None)
 
     def backward(self, grad):
-        return np.multiply(grad, self.cache[-1] > 0) 
+        # print(grad.shape, self.cache[-1].shape)
+        return np.multiply(grad, self.cache[-1] > 0)
 
 class Linear(Node):
     def __init__(self, indim, outdim):
@@ -31,9 +32,10 @@ class Linear(Node):
         return: output data, dim: (Batch_size, outdim)
         '''
         # TODO: YOUR CODE HERE
-        
-        
-        raise NotImplementedError
+        output = np.dot(X, self.params[0]) + self.params[1]
+        self.cache.append(X)
+        return output
+        # raise NotImplementedError
 
     def backward(self, grad):
         '''
@@ -41,9 +43,13 @@ class Linear(Node):
         return: gradient of input data, dim: (Batch_size, indim)
         '''
         # TODO: YOUR CODE HERE, remember to save the gradients of weight and bias in self.grad.
-        
-        
-        raise NotImplementedError
+        # print(grad.shape)
+        X = self.cache.pop()
+        weight, _ = self.params
+        self.grad = [np.dot(X.T, grad), np.sum(grad, axis=0)]
+        # print(np.dot(grad, weight.T).shape)
+        return np.dot(grad, weight.T)
+        # raise NotImplementedError
 
 
 
@@ -57,9 +63,10 @@ class sigmoid(Node):
         return: output data, dim: (*)
         '''
         # TODO: YOUR CODE HERE
-        
-        
-        raise NotImplementedError        
+        self.cache.append(X)
+        return 1 / (1 + np.exp(-X))
+
+        # raise NotImplementedError
 
     def backward(self, grad):
         '''
@@ -67,16 +74,17 @@ class sigmoid(Node):
         return: gradient of input data, dim: (*)
         '''
         # TODO: YOUR CODE HERE
-        
-        
-        raise NotImplementedError        
-        
+        sigmoid_output = self.forward(self.cache.pop())
+        return grad * sigmoid_output * (1 - sigmoid_output)
+
+        # raise NotImplementedError
+
 
 class MSE(Node):
     def __init__(self):
         super().__init__("MSE")
-        
-        
+
+
     def forward(self, X, Y):
         '''
         X: output of model, dim: (Batch_size, *)
@@ -84,17 +92,21 @@ class MSE(Node):
         return: MSE loss, dim: (1)
         '''
         # TODO: YOUR CODE HERE
-        
-        
-        raise NotImplementedError       
-    
-    
+        # print('X.shape:',X.shape)
+        # print('Y.shape:',Y.shape)
+        self.cache.append((X, Y))
+        return np.mean((X - Y) ** 2)
+
+        # raise NotImplementedError
+
+
     def backward(self):
         '''
         return: gradient of input data, dim: (Batch_size, *)
         '''
         # TODO: YOUR CODE HERE
-        
-        
-        raise NotImplementedError       
+        X, Y = self.cache.pop()
+        return 2 * (X - Y) / X.size
+
+        # raise NotImplementedError
 
