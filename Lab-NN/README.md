@@ -65,7 +65,7 @@
 
    **要求：**数据维度变化如下：3 * H * W -> 32 * H/2 * W/2 -> 64 * H/4 * W/4 -> 128 * H/4 * W/4 -> encoding_dim -> 128 * H/4 * W/4 -> 64 * H/4 * W/4 -> 32 * H/2 * W/2 -> 3 * H * W；使用Linear layer实现图片到latent vector的转换；采用Max Pooling；采用ReLU作为激活函数；确保输出值位于[0, 1]范围内。
 
-   **你可能用到的函数有：**`torch.nn.Conv2d`、`torch.nn.MaxPool2d`、`torch.nn.Linear`、`torch.nn.ConvTranspose2d`等，请通过[pytorch官方文档][https://pytorch.org/docs/stable/index.html]来查阅、学习相关函数的用法。
+   **你可能用到的函数有：**`torch.nn.Conv2d`、`torch.nn.MaxPool2d`、`torch.nn.Linear`、`torch.nn.ConvTranspose2d`等，请通过[pytorch官方文档](https://pytorch.org/docs/stable/index.html)来查阅、学习相关函数的用法。
 
 在完成上述部分后，你可以运行`python train_script.py --model AE`来进行模型训练。在训练过程中，你将观察到模型损失的逐步下降，并且在其他条件相同下（均采用SGD、相同的encoding size等），Convolutional Autoencoder的train loss与validation loss均比MLP Autoencoder要低（若你的代码实现正确，在60个epoch后train loss大致会收敛到0.015以下），验证了该架构的优越性。
 
@@ -73,7 +73,7 @@
 
 请你：
 
-2. 了解SGD with momentum、Adam等优化器的原理以及torch中的调用方式，调整`train_script.py`中optimizer的类型或参数，以及scheduler的参数，以**确保模型可以在15个epoch以内，train loss降低到0.01以下，validation loss降低到0.012以下。**（提示：在引入momentum或更高阶的优化算法后，你可能需要将learning rate调低若干个数量级。）
+1. 了解SGD with momentum、Adam等优化器的原理以及torch中的调用方式，调整`train_script.py`中optimizer的类型或参数，以及scheduler的参数，以**确保模型可以在15个epoch以内，train loss降低到0.01以下，validation loss降低到0.012以下。**（提示：在引入momentum或更高阶的优化算法后，你可能需要将learning rate调低若干个数量级。）
 
 每一次训练，最优模型都将会被保存在`./models/BestModel_AE.pth`中。你可以运行`python visualization.py --model AE`来可视化模型的重建效果，输出图片保存在`./vis/train_AE.png`与`./vis/valid_AE.png`中。你将看到原始图片与模型重建的图片的对比，以此来判断模型的重建效果。
 
@@ -107,7 +107,7 @@
 
 如果你具有一定的计算资源，同时也对生成更高质量的图片感兴趣：
 
-4. (不计分) 请你通过调整encoding size、训练图片的size（见create_flower_dataloaders的输入参数）、训练集的大小（full dataset可以从[这里][https://www.kaggle.com/datasets/l3llff/flowers]获取），乃至模型架构（考虑GAN、Diffusion Models等）等各种参数，以生成更高质量的图片。
+1. (不计分) 请你通过调整encoding size、训练图片的size（见create_flower_dataloaders的输入参数）、训练集的大小（full dataset可以从[这里](https://www.kaggle.com/datasets/l3llff/flowers)获取），乃至模型架构（考虑GAN、Diffusion Models等）等各种参数，以生成更高质量的图片。
 
 
 
