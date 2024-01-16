@@ -3,27 +3,42 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 AE_ENCODING_DIM = 64
-
-# Define the Encoder
+H = W = 24
 class Encoder(nn.Module):
     def __init__(self, encoding_dim):
         super(Encoder, self).__init__()
         '''
         encoding_dim: the dimension of the latent vector produced by the encoder
         '''
-        
-        
         # TODO: implement the encoder
+
+        self.conv1 = nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1)
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)
+        self.conv3 = nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1)
+        self.pool = nn.MaxPool2d(2, 2)
+        self.linear_to = nn.Linear(128 * (H // 4) * (W // 4), encoding_dim)
+
+
 
     def forward(self, x):
         '''
         x: input images, dim: (Batch_size, 3, IMG_WIDTH, IMG_HEIGHT)
         return v: latent vector, dim: (Batch_size, encoding_dim)
         '''
-        
-        
         # TODO: implement the forward pass
+        x = self.conv1(x)
+        x = self.pool(x)
+        x = F.relu(x)
+        x = self.conv2(x)
+        x = self.pool(x)
+        x = F.relu(x)
+        x = self.conv3(x)
+        x = F.relu(x)
+        x = x.view(x.size(0), -1)
+        v = self.linear_to(x)
+
         return v
+
 
 
 # Define the Decoder
@@ -33,17 +48,32 @@ class Decoder(nn.Module):
         '''
         encoding_dim: the dimension of the latent vector produced by the encoder
         '''
-        
+
         # TODO: implement the decoder
+        self.fc = nn.Linear(encoding_dim, 128 * (H//4) * (W//4))
+        self.deconv1 = nn.ConvTranspose2d(128, 64, kernel_size=3, stride=1, padding=1)
+        self.deconv2 = nn.ConvTranspose2d(64, 32, kernel_size=3, stride=1, padding=1)
+        self.deconv3 = nn.ConvTranspose2d(32, 3, kernel_size=3, stride=1, padding=1)
+        self.upsample = nn.Upsample(scale_factor=2, mode='bilinear')
 
     def forward(self, v):
         '''
         v: latent vector, dim: (Batch_size, encoding_dim)
         return x: reconstructed images, dim: (Batch_size, 3, IMG_WIDTH, IMG_HEIGHT)
         '''
-        
-        
+
+
         # TODO: implement the forward pass
+        x = self.fc(v)
+        x = x.view(-1, 128, H//4, W//4)
+        x = self.deconv1(x)
+        x = F.relu(x)
+        x = self.deconv2(x)
+        x = self.upsample(x)
+        x = F.relu(x)
+        x = self.deconv3(x)
+        x = self.upsample(x)
+        x = torch.sigmoid(x)
         return x
 
 
@@ -58,7 +88,7 @@ class Autoencoder(nn.Module):
         v = self.encoder(x)
         x = self.decoder(v)
         return x
-    
+
     @property
     def name(self):
         return "AE"

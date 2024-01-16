@@ -26,7 +26,8 @@ model.load_state_dict(torch.load(model_save_path))
 # TODO: Generate random images. Please sample 10 latent vectors from a standard normal distribution, and feed them to the decoder to generate images
 # Please ensure that the generated images are tensors named as random_images, with shape (10, 3, 24, 24)
 
-
+latent_vectors = torch.randn(10, ENCODING_DIM)
+random_images = model.decoder(latent_vectors)
 
 # Save the 10 random images in one figure
 import matplotlib.pyplot as plt
@@ -37,5 +38,5 @@ fig = plt.figure(figsize=(10, 1))
 for i in range(10):
     ax = fig.add_subplot(1, 10, i + 1, xticks=[], yticks=[])
     ax.imshow(np.transpose(random_images[i].detach().numpy(), (1, 2, 0)))
-    
+
 plt.savefig(f"{vis_root}/random_images_{args.model}.png")

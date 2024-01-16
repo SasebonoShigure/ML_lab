@@ -3,7 +3,7 @@ from torch import nn
 from torch.nn import functional as F
 
 VAE_ENCODING_DIM = 64
-
+H = W = 24
 # Define the Variational Encoder
 class VarEncoder(nn.Module):
     def __init__(self, encoding_dim):
@@ -12,7 +12,12 @@ class VarEncoder(nn.Module):
         '''
         super(VarEncoder, self).__init__()
         # TODO: implement the encoder
-        
+        self.conv1 = nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1)
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)
+        self.conv3 = nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1)
+        self.pool = nn.MaxPool2d(2, 2)
+        self.linear_var = nn.Linear(128 * (H // 4) * (W // 4), encoding_dim)
+        self.linear_mu = nn.Linear(128 * (H // 4) * (W // 4), encoding_dim)
 
 
     def forward(self, x):
@@ -21,9 +26,19 @@ class VarEncoder(nn.Module):
         return mu: mean of the distribution, dim: (Batch_size, encoding_dim)
         return log_var: log of the variance of the distribution, dim: (Batch_size, encoding_dim)
         '''
-        
+
         # TODO: implement the forward pass
-        
+        x = self.conv1(x)
+        x = self.pool(x)
+        x = F.relu(x)
+        x = self.conv2(x)
+        x = self.pool(x)
+        x = F.relu(x)
+        x = self.conv3(x)
+        x = F.relu(x)
+        x = x.view(x.size(0), -1)
+        mu = self.linear_mu(x)
+        log_var = self.linear_var(x)
         return mu, log_var
 
 # Define the Decoder
@@ -34,14 +49,29 @@ class VarDecoder(nn.Module):
         '''
         super(VarDecoder, self).__init__()
         # TODO: implement the decoder
+        self.fc = nn.Linear(encoding_dim, 128 * (H//4) * (W//4))
+        self.deconv1 = nn.ConvTranspose2d(128, 64, kernel_size=3, stride=1, padding=1)
+        self.deconv2 = nn.ConvTranspose2d(64, 32, kernel_size=3, stride=1, padding=1)
+        self.deconv3 = nn.ConvTranspose2d(32, 3, kernel_size=3, stride=1, padding=1)
+        self.upsample = nn.Upsample(scale_factor=2, mode='bilinear')
 
     def forward(self, v):
         '''
         v: latent vector, dim: (Batch_size, encoding_dim)
         return x: reconstructed images, dim: (Batch_size, 3, IMG_WIDTH, IMG_HEIGHT)
         '''
-        
+
         # TODO: implement the forward pass
+        x = self.fc(v)
+        x = x.view(-1, 128, H//4, W//4)
+        x = self.deconv1(x)
+        x = F.relu(x)
+        x = self.deconv2(x)
+        x = self.upsample(x)
+        x = F.relu(x)
+        x = self.deconv3(x)
+        x = self.upsample(x)
+        x = torch.sigmoid(x)
         return x
 
 # Define the Variational Autoencoder
@@ -61,12 +91,14 @@ class VarAutoencoder(nn.Module):
         log_var: log of the variance of the distribution, dim: (Batch_size, encoding_dim)
         return v: sampled latent vector, dim: (Batch_size, encoding_dim)
         '''
-        
-        
-        # TODO: implement the reparameterization trick to sample v
 
+
+        # TODO: implement the reparameterization trick to sample v
+        std = torch.exp(0.5*log_var)
+        eps = torch.randn_like(std)
+        z = mu + eps*std
         return z
-        
+
     def forward(self, x):
         '''
         x: input images, dim: (Batch_size, 3, IMG_WIDTH, IMG_HEIGHT)
@@ -75,7 +107,9 @@ class VarAutoencoder(nn.Module):
         return log_var: log of the variance of the distribution, dim: (Batch_size, encoding_dim)
         '''
         # TODO: implement the forward pass
-    
+        mu, log_var = self.encoder(x)
+        z = self.reparameterize(mu, log_var)
+        x = self.decoder(z)
         return x, mu, log_var
 
 # Loss Function
@@ -86,4 +120,7 @@ def VAE_loss_function(outputs, images):
     return loss: the loss value, dim: (1)
     '''
     # TODO: implement the loss function for VAE
-
+    recon_x, mu, log_var = outputs
+    MSE = F.mse_loss(recon_x, images, reduction='sum')
+    KLD = -0.5 * torch.sum(1 + log_var - mu.pow(2) - log_var.exp())
+    return MSE + KLD

@@ -34,8 +34,8 @@ model_class = VarAutoencoder if args.model == "VAE" else Autoencoder
 model = model_class(
     encoding_dim=AE_ENCODING_DIM if args.model == "AE" else VAE_ENCODING_DIM,
 )
-optimizer = optim.SGD(model.parameters(), momentum=0., lr=1.) # TODO: You can change this in Part 3 Step 2, for faster and better convergence.
-scheduler = exponential_decay(initial_learning_rate=1., decay_rate=0.9, decay_epochs=5) # TODO: You can change this in Part 3 Step 2, for faster and better convergence.
+optimizer = optim.Adam(model.parameters(), lr=0.001) # TODO: You can change this in Part 3 Step 2, for faster and better convergence.
+scheduler = exponential_decay(initial_learning_rate=0.001, decay_rate=0.9, decay_epochs=3) # TODO: You can change this in Part 3 Step 2, for faster and better convergence.
 
 training_dataloader, validation_dataloader = create_flower_dataloaders(batch_size, data_root, 24, 24)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
